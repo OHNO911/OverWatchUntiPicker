@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWアンチくん</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="p-4 md:p-6 bg-slate-950">
+    <div class="max-w-[1280px] mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <h1 class="text-2xl font-black text-white uppercase tracking-tighter flex items-center gap-2">
+                OWアンチくん
+            </h1>
+            
+            <div class="flex flex-wrap justify-center gap-4">
+                <div class="flex items-center gap-2 bg-slate-800 p-1 rounded-full border border-slate-600">
+                    <button id="size-5-btn" onclick="setTeamSize(5)" class="px-4 py-1 rounded-full text-xs font-bold transition-all">5vs5</button>
+                    <button id="size-6-btn" onclick="setTeamSize(6)" class="px-4 py-1 rounded-full text-xs font-bold transition-all">6vs6</button>
+                </div>
+
+                <div class="flex items-center gap-3 bg-slate-800 px-4 py-2 rounded-full border border-slate-600">
+                    <span id="role-queue-label" class="text-xs font-bold text-slate-300">ロールキュー</span>
+                    <button id="role-queue-btn" onclick="toggleRoleQueue()" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors">
+                        <span id="role-queue-toggle" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-5 gap-2 md:gap-4 mb-8 max-w-3xl mx-auto transition-all" id="team-slots"></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <div class="lg:col-span-2">
+                <div class="bg-slate-800 rounded-t-xl border-x border-t border-slate-700">
+                    <div class="flex text-center">
+                        <button onclick="changeTab('tank')" id="tab-tank" class="tab-btn flex-1 py-3 text-xs uppercase">タンク</button>
+                        <button onclick="changeTab('damage')" id="tab-damage" class="tab-btn flex-1 py-3 text-xs uppercase">ダメージ</button>
+                        <button onclick="changeTab('support')" id="tab-support" class="tab-btn flex-1 py-3 text-xs uppercase">サポート</button>
+                    </div>
+                </div>
+                <div class="bg-slate-900/50 p-4 rounded-b-xl border border-slate-700 min-h-[400px]">
+                    <div id="hero-grid" class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2"></div>
+                    
+                    <div class="mt-4 mb-0 flex justify-between items-center border-t border-slate-800 pt-3">
+                        <button onclick="openDbModal()" class="text-[10px] font-black px-4 py-2 rounded bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 hover:text-white transition uppercase">データベースを管理</button>
+                        <button onclick="clearTeam()" class="text-[10px] font-black px-4 py-2 rounded bg-slate-800 text-slate-400 border border-slate-700 hover:bg-red-600 hover:text-white transition uppercase">リセット</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-1">
+                <div class="sticky top-6 bg-slate-900 p-5 rounded-2xl border border-slate-700 shadow-2xl">
+                    <h3 class="text-lg font-black text-amber-500 mb-5 tracking-tighter">推奨アンチピック</h3>
+                    <div id="analysis-placeholder" class="text-center py-20 text-slate-600 border-2 border-dashed border-slate-800 rounded-xl text-xs font-bold">敵ヒーローを選択してください</div>
+                    
+                    <div id="analysis-results" class="hidden flex flex-col space-y-6">
+                        <div id="rank-section-tank" style="order: 0;">
+                            <div class="flex justify-between items-center mb-3 border-b border-blue-400/20 pb-1">
+                                <h4 class="text-[10px] font-black text-blue-400 uppercase tracking-widest">タンク</h4>
+                                <div class="flex gap-1">
+                                    <button onclick="moveRole('tank', -1)" class="reorder-btn">▲</button>
+                                    <button onclick="moveRole('tank', 1)" class="reorder-btn">▼</button>
+                                </div>
+                            </div>
+                            <div id="results-tank" class="space-y-2"></div>
+                            <div id="expand-tank" class="expand-btn" onclick="toggleExpand('tank')"><svg class="arrow-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div>
+                            <div id="more-tank" class="more-results space-y-2"></div>
+                        </div>
+
+                        <div id="rank-section-damage" style="order: 1;">
+                            <div class="flex justify-between items-center mb-3 border-b border-red-400/20 pb-1">
+                                <h4 class="text-[10px] font-black text-red-400 uppercase tracking-widest">ダメージ</h4>
+                                <div class="flex gap-1">
+                                    <button onclick="moveRole('damage', -1)" class="reorder-btn">▲</button>
+                                    <button onclick="moveRole('damage', 1)" class="reorder-btn">▼</button>
+                                </div>
+                            </div>
+                            <div id="results-damage" class="space-y-2"></div>
+                            <div id="expand-damage" class="expand-btn" onclick="toggleExpand('damage')"><svg class="arrow-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div>
+                            <div id="more-damage" class="more-results space-y-2"></div>
+                        </div>
+
+                        <div id="rank-section-support" style="order: 2;">
+                            <div class="flex justify-between items-center mb-3 border-b border-green-400/20 pb-1">
+                                <h4 class="text-[10px] font-black text-green-400 uppercase tracking-widest">サポート</h4>
+                                <div class="flex gap-1">
+                                    <button onclick="moveRole('support', -1)" class="reorder-btn">▲</button>
+                                    <button onclick="moveRole('support', 1)" class="reorder-btn">▼</button>
+                                </div>
+                            </div>
+                            <div id="results-support" class="space-y-2"></div>
+                            <div id="expand-support" class="expand-btn" onclick="toggleExpand('support')"><svg class="arrow-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div>
+                            <div id="more-support" class="more-results space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="db-modal" onclick="closeDbModal()">
+        <div class="modal-inner flex flex-col bg-slate-950 border border-slate-700 overflow-hidden" onclick="event.stopPropagation()">
+            <div class="bg-slate-800 pl-4 pr-2 py-4 flex justify-between items-center border-b border-slate-700 flex-shrink-0">
+                <span class="text-xs font-black text-slate-100 uppercase">ヒーロー相性データベース</span>
+                <div class="flex items-center gap-2">
+                    <div class="flex bg-slate-900 rounded border border-slate-700 p-0.5 mr-2">
+                        <button id="undo-btn" onclick="undo()" class="p-1.5 text-slate-400 hover:text-white disabled:opacity-20 disabled:pointer-events-none" title="元に戻す">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        </button>
+                        <div class="w-[1px] bg-slate-700 mx-0.5"></div>
+                        <button id="redo-btn" onclick="redo()" class="p-1.5 text-slate-400 hover:text-white disabled:opacity-20 disabled:pointer-events-none" title="やり直し">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </button>
+                    </div>
+                    
+                    <button onclick="resetHeroData()" class="text-[9px] font-black px-2 py-1 bg-red-900/40 text-red-400 border border-red-800 rounded hover:bg-red-800 hover:text-white transition">初期化</button>
+                    <button onclick="closeDbModal()" class="text-slate-400 hover:text-white text-xl font-bold w-10 h-10 flex items-center justify-center">&times;</button>
+                </div>
+            </div>
+            <div class="bg-slate-900 grid grid-cols-12 text-[10px] font-black text-slate-500 border-b border-slate-800 flex-shrink-0">
+                <div class="col-span-3 pl-4 py-3 border-r border-slate-800">ヒーロー</div>
+                <div class="col-span-3 py-3 text-center border-r border-slate-800 tracking-tighter leading-tight flex flex-col justify-center">
+                    <span>苦手な構成(D/R/P)</span>
+                    <span class="text-[8px] text-amber-500/80">数字が大きいほど苦手</span>
+                </div>
+                <div class="col-span-6 pl-4 py-3 leading-tight flex flex-col justify-center">
+                    <span>苦手な相手</span>
+                    <span class="text-[8px] text-amber-500/80">数字が大きいほど苦手</span>
+                </div>
+            </div>
+            <div class="modal-body overflow-y-auto flex-grow relative">
+                <div id="db-table-container"></div>
+                <div id="anti-picker" class="hidden absolute inset-0 bg-slate-950/95 z-50 p-6 flex flex-col">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex flex-col">
+                            <h5 class="text-sm font-black text-white uppercase">追加するヒーローを選択</h5>
+                            <p class="text-[9px] text-amber-500 font-bold mt-1 leading-tight">※すでに登録されているヒーローは上書きされます</p>
+                        </div>
+                        <button onclick="closeAntiPicker()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+                    </div>
+                    <div id="anti-picker-grid" class="grid grid-cols-6 sm:grid-cols-8 gap-2 overflow-y-auto pr-2"></div>
+                </div>
+                <div id="anti-rating-picker" class="hidden absolute inset-0 bg-slate-950/95 z-50 p-6 flex flex-col items-center justify-center">
+                    <div id="selected-anti-display" class="mb-6 flex flex-col items-center"></div>
+                    <h5 class="text-sm font-black text-white uppercase mb-4">苦手度を設定 (1-4)</h5>
+                    <div class="flex gap-4 mb-8">
+                        <button onclick="saveNewAnti(1)" class="rating-btn bg-slate-800 border-slate-600">1</button>
+                        <button onclick="saveNewAnti(2)" class="rating-btn bg-slate-700 border-slate-500">2</button>
+                        <button onclick="saveNewAnti(3)" class="rating-btn bg-slate-600 border-slate-400 text-white">3</button>
+                        <button onclick="saveNewAnti(4)" class="rating-btn bg-red-700 border-red-500 text-white">4</button>
+                    </div>
+                    <button onclick="closeAntiRatingPicker()" class="text-xs text-slate-500 underline">キャンセル</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ES Module として読み込む。window.* 経由で onclick ハンドラと接続する。 -->
+    <script type="module" src="main.js"></script>
+</body>
+</html>
