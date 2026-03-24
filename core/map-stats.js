@@ -1,14 +1,21 @@
 /**
  * core/map-stats.js
  *
- * マップ別/ランク帯別のヒーロー勝率をスクレイピングで取得し、
- * localStorage にキャッシュする。
+ * 公式 Hero Statistics ページ（Overwatch）をスクレイピングし、
+ * マップ別の勝率を localStorage にキャッシュする。
  */
 
-const CACHE_KEY = 'ow-map-winrate-cache-v1';
+const CACHE_KEY = 'ow-map-winrate-cache-v2';
 const CACHE_TTL_MS = 1000 * 60 * 60 * 12; // 12時間
 
-/** UIで使うマップ一覧（value はプロバイダー向け英語表記） */
+const STATS_PAGE_BASE = 'https://overwatch.blizzard.com/ja-jp/rates/';
+const INPUT = 'PC';
+const REGION = 'Asia';
+const ROLE = 'All';
+const RQ = '0';
+const TIER = 'All';
+
+/** UIで使うマップ一覧（value は内部共通名） */
 export const MAP_OPTIONS = [
     { label: '未選択', value: '' },
     { label: 'Busan', value: 'busan' },
@@ -33,9 +40,6 @@ export const MAP_OPTIONS = [
     { label: 'New Queen Street', value: 'new queen street' },
 ];
 
-const RANKS = ['master', 'diamond'];
-
-/** Overbuff英名 -> データ側 id */
 const HERO_NAME_TO_ID = {
     'D.Va': 'dva',
     Doomfist: 'doomfist',
@@ -84,23 +88,68 @@ const HERO_NAME_TO_ID = {
     Zenyatta: 'zenyatta',
 };
 
-function buildSourceUrl(map, rank) {
-    const target = `https://www.overbuff.com/heroes?platform=pc&gameMode=competitive&skillTier=${rank}&map=${encodeURIComponent(map)}`;
+const heroKeyToId = Object.entries(HERO_NAME_TO_ID).reduce((acc, [label, id]) => {
+    acc[normalizeToken(label)] = id;
+    return acc;
+}, {});
+
+function normalizeToken(value) {
+    return String(value || '')
+        .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[’']/g, '')
+        .replace(/[^A-Za-z0-9: .\-]/g, '')
+        .replace(/\s+/g, ' ')
+        .toLowerCase();
+}
+
+function mapToQuerySlug(map) {
+    if (!map) return 'all-maps';
+    return normalizeToken(map)
+        .replace(/:/g, '')
+        .replace(/\./g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+}
+
+function buildSourceUrl(map) {
+    const params = new URLSearchParams({
+        input: INPUT,
+        map: mapToQuerySlug(map),
+        region: REGION,
+        role: ROLE,
+        rq: RQ,
+        tier: TIER,
+    });
+
+    const target = `${STATS_PAGE_BASE}?${params.toString()}`;
     return `https://r.jina.ai/http://${target.replace(/^https?:\/\//, '')}`;
 }
 
-function parseWinRateLines(text) {
-    const rows = text.split('\n');
-    const winrates = {};
+function isPercentLine(line) {
+    return /^[0-9]+(?:\.[0-9]+)?%$/.test(line.trim());
+}
 
-    rows.forEach(line => {
-        const match = line.match(/\|\s*\[?([A-Za-z0-9.\-': ]+)\]?\s*\|[^|]*\|\s*([0-9]+(?:\.[0-9]+)?)%/);
-        if (!match) return;
-        const heroLabel = match[1].trim();
-        const id = HERO_NAME_TO_ID[heroLabel];
-        if (!id) return;
-        winrates[id] = Number(match[2]);
-    });
+function parseWinRateLines(text) {
+    const lines = text
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean);
+
+    const winrates = {};
+    for (let i = 0; i < lines.length - 2; i++) {
+        const heroRaw = lines[i];
+        const winRateRaw = lines[i + 1];
+        const pickRateRaw = lines[i + 2];
+        if (!isPercentLine(winRateRaw) || !isPercentLine(pickRateRaw)) continue;
+
+        const heroId = heroKeyToId[normalizeToken(heroRaw)];
+        if (!heroId) continue;
+
+        winrates[heroId] = Number(winRateRaw.replace('%', ''));
+        i += 2;
+    }
 
     return winrates;
 }
@@ -139,25 +188,23 @@ export async function getMapWinRates(map, forceRefresh = false) {
         return { ...cached, source: 'cache' };
     }
 
-    const byRank = { master: {}, diamond: {} };
-    await Promise.all(RANKS.map(async rank => {
-        const res = await fetch(buildSourceUrl(map, rank));
-        if (!res.ok) return;
-        const txt = await res.text();
-        byRank[rank] = parseWinRateLines(txt);
-    }));
+    const res = await fetch(buildSourceUrl(map));
+    if (!res.ok) {
+        throw new Error(`Failed to fetch map stats: HTTP ${res.status}`);
+    }
 
-    const blended = {};
-    Object.keys(HERO_NAME_TO_ID).forEach(name => {
-        const id = HERO_NAME_TO_ID[name];
-        const m = byRank.master[id];
-        const d = byRank.diamond[id];
-        if (typeof m === 'number' && typeof d === 'number') blended[id] = (m + d) / 2;
-        else if (typeof m === 'number') blended[id] = m;
-        else if (typeof d === 'number') blended[id] = d;
-    });
+    const txt = await res.text();
+    const parsed = parseWinRateLines(txt);
 
-    const payload = { byRank, blended, updatedAt: Date.now() };
+    const payload = {
+        byRank: {
+            master: { ...parsed },
+            diamond: { ...parsed },
+        },
+        blended: parsed,
+        updatedAt: Date.now(),
+    };
+
     cache[map] = payload;
     saveCache(cache);
     return { ...payload, source: 'network' };
