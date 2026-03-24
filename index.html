@@ -10,12 +10,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="p-4 md:p-6 bg-slate-950">
-    <div class="max-w-[1280px] mx-auto">
+<body class="p-4 md:p-6">
+    <div class="max-w-[1280px] mx-auto space-y-4">
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <h1 class="text-2xl font-black text-white uppercase tracking-tighter flex items-center gap-2">
-                OWアンチくん
-            </h1>
+            <div>
+                <h1 class="text-2xl md:text-3xl font-black text-white uppercase tracking-tight flex items-center gap-2">OWアンチくん</h1>
+                <p class="text-[11px] text-slate-400 font-bold mt-1">プロ視点の対面相性とマップ補正で、最適なアンチピックを即提案。</p>
+            </div>
             
             <div class="flex flex-wrap justify-center gap-4">
                 <div class="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-full border border-slate-600">
@@ -35,9 +36,9 @@
                     <button id="size-6-btn" onclick="setTeamSize(6)" class="px-4 py-1 rounded-full text-xs font-bold transition-all">6vs6</button>
                 </div>
 
-                <div class="flex items-center gap-3 bg-slate-800 px-4 py-2 rounded-full border border-slate-600">
+                <div class="flex items-center gap-3 bg-slate-800/90 px-4 py-2 rounded-full border border-slate-600">
                     <span id="role-queue-label" class="text-xs font-bold text-slate-300">ロールキュー</span>
-                    <button id="role-queue-btn" onclick="toggleRoleQueue()" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors">
+                    <button id="role-queue-btn" onclick="toggleRoleQueue()" class="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-700 transition-colors" aria-label="ロールキューを切り替え">
                         <span id="role-queue-toggle" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"></span>
                     </button>
                 </div>
@@ -47,7 +48,7 @@
 
         <div class="grid grid-cols-5 gap-2 md:gap-4 mb-8 max-w-3xl mx-auto transition-all" id="team-slots"></div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start mt-2">
             <div class="lg:col-span-2">
                 <div class="bg-slate-800 rounded-t-xl border-x border-t border-slate-700">
                     <div class="flex text-center">
@@ -56,7 +57,7 @@
                         <button onclick="changeTab('support')" id="tab-support" class="tab-btn flex-1 py-3 text-xs uppercase">サポート</button>
                     </div>
                 </div>
-                <div class="bg-slate-900/50 p-4 rounded-b-xl border border-slate-700 min-h-[400px]">
+                <div class="bg-slate-900/60 p-4 rounded-b-xl border border-slate-700 min-h-[400px] shadow-xl">
                     <div id="hero-grid" class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2"></div>
                     
                     <div class="mt-4 mb-0 flex justify-between items-center border-t border-slate-800 pt-3">
@@ -67,7 +68,7 @@
             </div>
 
             <div class="lg:col-span-1">
-                <div class="sticky top-6 bg-slate-900 p-5 rounded-2xl border border-slate-700 shadow-2xl">
+                <div class="sticky top-6 bg-slate-900/95 p-5 rounded-2xl border border-slate-700 shadow-2xl">
                     <h3 class="text-lg font-black text-amber-500 mb-5 tracking-tighter">推奨アンチピック</h3>
                     <div id="analysis-placeholder" class="text-center py-20 text-slate-600 border-2 border-dashed border-slate-800 rounded-xl text-xs font-bold">敵ヒーローを選択してください</div>
                     

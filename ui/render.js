@@ -21,20 +21,26 @@ import { MAP_OPTIONS } from '../core/map-stats.js';
  *
  * @param {string} role - 'tank' | 'damage' | 'support'
  * @param {function(HeroData): void} onToggleHero - カードクリック時のコールバック
+ * @param {(hero: HeroData) => boolean} [canSelectHero] - 選択可能か判定する関数
  */
-export function renderHeroGrid(role, onToggleHero) {
+export function renderHeroGrid(role, onToggleHero, canSelectHero = () => true) {
     const grid = document.getElementById('hero-grid');
     if (!grid) return;
     grid.innerHTML = '';
 
     appState.heroData.filter(h => h.role === role).forEach(hero => {
         const isSelected = appState.selectedHeroes.some(h => h.id === hero.id);
-        const card = document.createElement('div');
-        card.className = `hero-card rounded-lg ${isSelected ? 'active' : ''}`;
+        const isSelectable = canSelectHero(hero);
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = `hero-card rounded-lg ${isSelected ? 'active' : ''} ${isSelectable ? '' : 'is-locked'}`;
+        card.setAttribute('aria-pressed', String(isSelected));
+        card.disabled = !isSelectable && !isSelected;
+        card.title = !isSelectable && !isSelected ? '現在のチーム条件では選択できません' : hero.name;
         card.innerHTML = `
             <div class="badge badge-${hero.archetype}">${hero.archetype}</div>
             <div class="hero-img-container">
-                <img src="${_heroImg(hero)}" class="hero-img">
+                <img src="${_heroImg(hero)}" class="hero-img" alt="${hero.name}">
             </div>
             <div class="hero-label">${hero.name}</div>`;
         card.onclick = () => onToggleHero(hero);
@@ -92,7 +98,7 @@ function _renderSlot(container, hero, fixedRole, onRemoveHero) {
         slot.innerHTML = `
             <div class="badge badge-${hero.archetype}">${hero.archetype}</div>
             <div class="hero-img-container">
-                <img src="${_heroImg(hero)}" class="hero-img">
+                <img src="${_heroImg(hero)}" class="hero-img" alt="${hero.name}">
             </div>
             <div class="hero-label">${hero.name}</div>`;
     } else {
@@ -335,7 +341,14 @@ export function renderAntiPickerGrid() {
 
 /** ロールキュートグルの表示を更新する */
 export function updateRoleQueueUI() {
+    const button = document.getElementById('role-queue-btn');
     const toggle = document.getElementById('role-queue-toggle');
+    if (button) {
+        button.classList.toggle('bg-emerald-500', appState.isRoleQueue);
+        button.classList.toggle('bg-slate-700', !appState.isRoleQueue);
+        button.setAttribute('aria-checked', String(appState.isRoleQueue));
+        button.setAttribute('role', 'switch');
+    }
     if (toggle) {
         toggle.style.transform = appState.isRoleQueue ? 'translateX(1.5rem)' : 'translateX(0.25rem)';
     }
