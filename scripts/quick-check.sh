@@ -11,7 +11,7 @@ if [[ "${status}" != "200" ]]; then
   exit 1
 fi
 
-if ! rg -q "OWアンチくん" /tmp/ow_anti_index.html; then
+if ! rg -q "OW Counter Lab" /tmp/ow_anti_index.html; then
   echo "NG: タイトル文字列を確認できませんでした"
   exit 1
 fi

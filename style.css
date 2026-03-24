@@ -124,3 +124,27 @@ body {
 .arrow-icon.open { transform: rotate(180deg); }
 
 .grid-cols-6-fixed { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+
+/* 2026-03 branding & UI refresh */
+.max-w-\[1280px\] {
+    backdrop-filter: saturate(1.05);
+}
+.hero-card {
+    border-radius: 12px;
+}
+.hero-card:hover {
+    transform: translateY(-2px) scale(1.01);
+}
+.slot {
+    border-radius: 14px;
+}
+.rank-card {
+    border-radius: 10px;
+}
+#analysis-placeholder {
+    background: linear-gradient(180deg, rgba(15,23,42,0.55), rgba(2,6,23,0.75));
+}
+select, button, input[type="range"] {
+    accent-color: #22d3ee;
+}

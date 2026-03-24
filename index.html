@@ -5,7 +5,7 @@
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OWアンチくん</title>
+    <title>OW Counter Lab</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -14,8 +14,9 @@
     <div class="max-w-[1280px] mx-auto space-y-4">
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div>
-                <h1 class="text-2xl md:text-3xl font-black text-white uppercase tracking-tight flex items-center gap-2">OWアンチくん</h1>
-                <p class="text-[11px] text-slate-400 font-bold mt-1">プロ視点の対面相性とマップ補正で、最適なアンチピックを即提案。</p>
+                <h1 class="text-2xl md:text-3xl font-black text-white uppercase tracking-tight flex items-center gap-2">OW Counter Lab</h1>
+                <div class="mt-2 inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-600 text-[10px] font-bold text-cyan-300">UNOFFICIAL TOOL <span class="text-slate-500">|</span> STRATEGY ASSIST</div>
+                <p class="text-[11px] text-slate-400 font-bold mt-1">独自スコアエンジンで、敵構成に刺さるカウンターヒーローを素早く提案。</p>
             </div>
             
             <div class="flex flex-wrap justify-center gap-4">
@@ -61,16 +62,17 @@
                     <div id="hero-grid" class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2"></div>
                     
                     <div class="mt-4 mb-0 flex justify-between items-center border-t border-slate-800 pt-3">
-                        <button onclick="openDbModal()" class="text-[10px] font-black px-4 py-2 rounded bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 hover:text-white transition uppercase">データベースを管理</button>
-                        <button onclick="clearTeam()" class="text-[10px] font-black px-4 py-2 rounded bg-slate-800 text-slate-400 border border-slate-700 hover:bg-red-600 hover:text-white transition uppercase">リセット</button>
+                        <button onclick="openDbModal()" class="text-[10px] font-black px-4 py-2 rounded bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 hover:text-white transition uppercase">データセットを編集</button>
+                        <button onclick="clearTeam()" class="text-[10px] font-black px-4 py-2 rounded bg-slate-800 text-slate-400 border border-slate-700 hover:bg-red-600 hover:text-white transition uppercase">選択をクリア</button>
                     </div>
                 </div>
             </div>
 
             <div class="lg:col-span-1">
                 <div class="sticky top-6 bg-slate-900/95 p-5 rounded-2xl border border-slate-700 shadow-2xl">
-                    <h3 class="text-lg font-black text-amber-500 mb-5 tracking-tighter">推奨アンチピック</h3>
-                    <div id="analysis-placeholder" class="text-center py-20 text-slate-600 border-2 border-dashed border-slate-800 rounded-xl text-xs font-bold">敵ヒーローを選択してください</div>
+                    <h3 class="text-lg font-black text-amber-500 mb-2 tracking-tighter">推奨カウンター候補</h3>
+                    <p class="text-[10px] text-slate-400 mb-4">対面相性 × 構成相性 × マップ補正の合成スコア</p>
+                    <div id="analysis-placeholder" class="text-center py-20 text-slate-600 border-2 border-dashed border-slate-800 rounded-xl text-xs font-bold">敵ヒーローを選ぶと候補が表示されます</div>
                     
                     <div id="analysis-results" class="hidden flex flex-col space-y-6">
                         <div id="rank-section-tank" style="order: 0;">
