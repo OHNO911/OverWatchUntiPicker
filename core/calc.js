@@ -25,7 +25,10 @@
  * @param {import('../data/heroes.js').HeroData[]} heroData       - 全ヒーロー一覧
  * @returns {ScoredHero[]} スコア付きヒーロー配列
  */
-export function calculateAntiScores(selectedHeroes, heroData) {
+export function calculateAntiScores(selectedHeroes, heroData, options = {}) {
+    const mapWinRates = options.mapWinRates || null;
+    const mapWeight = typeof options.mapWeight === 'number' ? options.mapWeight : 0;
+
     // 敵チームの構成タイプ別ヒーロー数を集計
     const enemyArchTypes = { dive: 0, rush: 0, poke: 0 };
     selectedHeroes.forEach(h => {
@@ -81,9 +84,22 @@ export function calculateAntiScores(selectedHeroes, heroData) {
             }
         });
 
+        // マップ別の勝率補正（基礎計算は維持したまま加算）
+        let mapBonus = 0;
+        if (mapWinRates && typeof mapWinRates[h.id] === 'number') {
+            // 50%を基準に、最大 ±10 点程度に収まるようスケーリング
+            mapBonus = (mapWinRates[h.id] - 50) * 2 * mapWeight;
+            if (Math.abs(mapBonus) >= 0.2) {
+                const sign = mapBonus > 0 ? '+' : '';
+                const label = `マップ統計補正 ${sign}${mapBonus.toFixed(1)}`;
+                if (mapBonus >= 0) advantages.push(label);
+                else disadvantages.push(label);
+            }
+        }
+
         return {
             ...h,
-            score: Math.max(10, Math.min(99, 50.0 + antiImpact)),
+            score: Math.max(10, Math.min(99, 50.0 + antiImpact + mapBonus)),
             advantages: [...new Set(advantages)],
             disadvantages: [...new Set(disadvantages)],
         };

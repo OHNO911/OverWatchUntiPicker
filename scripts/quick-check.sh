@@ -21,4 +21,9 @@ if ! rg -q "hero-grid" /tmp/ow_anti_index.html; then
   exit 1
 fi
 
+if ! rg -q "map-select" /tmp/ow_anti_index.html; then
+  echo "NG: map-select 要素を確認できませんでした"
+  exit 1
+fi
+
 echo "OK: HTML の配信と主要要素の存在を確認しました (${URL})"

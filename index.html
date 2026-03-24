@@ -18,6 +18,18 @@
             </h1>
             
             <div class="flex flex-wrap justify-center gap-4">
+                <div class="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-full border border-slate-600">
+                    <label for="map-select" class="text-xs font-bold text-slate-300">マップ</label>
+                    <select id="map-select" onchange="setMap(this.value)" class="bg-slate-900 text-slate-200 text-xs rounded px-2 py-1 border border-slate-700"></select>
+                    <button id="map-refresh-btn" class="text-[10px] font-black px-2 py-1 rounded bg-slate-700 text-slate-200 border border-slate-600 hover:bg-slate-600 transition">更新</button>
+                </div>
+
+                <div class="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-full border border-slate-600">
+                    <span class="text-xs font-bold text-slate-300">マップ重み</span>
+                    <input id="map-weight" type="range" min="0" max="100" step="5" onchange="setMapWeight(this.value)" class="w-20">
+                    <span id="map-weight-label" class="text-xs text-amber-400 font-bold w-10 text-right">35%</span>
+                </div>
+
                 <div class="flex items-center gap-2 bg-slate-800 p-1 rounded-full border border-slate-600">
                     <button id="size-5-btn" onclick="setTeamSize(5)" class="px-4 py-1 rounded-full text-xs font-bold transition-all">5vs5</button>
                     <button id="size-6-btn" onclick="setTeamSize(6)" class="px-4 py-1 rounded-full text-xs font-bold transition-all">6vs6</button>
@@ -31,6 +43,7 @@
                 </div>
             </div>
         </div>
+        <div id="map-cache-status" class="text-center text-[10px] text-slate-500 -mt-3 mb-4">マップ補正: 未選択</div>
 
         <div class="grid grid-cols-5 gap-2 md:gap-4 mb-8 max-w-3xl mx-auto transition-all" id="team-slots"></div>
 

@@ -22,6 +22,7 @@ import {
 } from './core/state.js';
 
 import { calculateAntiScores } from './core/calc.js';
+import { getMapWinRates } from './core/map-stats.js';
 
 import {
     renderHeroGrid,
@@ -33,6 +34,7 @@ import {
     applyRoleOrderUI,
     updateHistoryButtons,
     updateTeamSizeUI,
+    renderMapControls,
 } from './ui/render.js';
 
 // ---------------------------------------------------------------------------
@@ -56,6 +58,7 @@ window.onload = async () => {
     loadSettings();
     loadHeroData();
     appState.apiImages = await fetchImages();
+    await syncMapStats();
     updateTeamSizeUI();
     updateRoleQueueUI();
     applyRoleOrderUI();
@@ -73,6 +76,7 @@ window.onload = async () => {
  */
 function updateUI() {
     renderTeamSlots(removeHero);
+    renderMapControls(refreshMapStats);
 
     // 現在アクティブなタブを検出して再描画
     const activeTabBtn = document.querySelector('.tab-btn[class*="active"]');
@@ -86,7 +90,10 @@ function updateUI() {
 
 /** アンチピック結果を計算して描画する */
 function updateAntiResults() {
-    const scoredHeroes = calculateAntiScores(appState.selectedHeroes, appState.heroData);
+    const scoredHeroes = calculateAntiScores(appState.selectedHeroes, appState.heroData, {
+        mapWinRates: appState.mapWinRates?.blended,
+        mapWeight: appState.mapWeight,
+    });
     renderAntiResults(scoredHeroes);
 }
 
@@ -125,6 +132,39 @@ function toggleRoleQueue() {
     updateRoleQueueUI();
     updateUI();
     saveSettings();
+}
+
+async function syncMapStats(forceRefresh = false) {
+    if (!appState.selectedMap) {
+        appState.mapWinRates = null;
+        return;
+    }
+    try {
+        appState.mapWinRates = await getMapWinRates(appState.selectedMap, forceRefresh);
+    } catch {
+        appState.mapWinRates = null;
+    }
+}
+
+async function setMap(mapName) {
+    appState.selectedMap = mapName;
+    await syncMapStats();
+    saveSettings();
+    updateUI();
+}
+
+function setMapWeight(rawValue) {
+    const v = Number(rawValue);
+    if (Number.isNaN(v)) return;
+    appState.mapWeight = Math.max(0, Math.min(1, v / 100));
+    saveSettings();
+    updateAntiResults();
+    renderMapControls(refreshMapStats);
+}
+
+async function refreshMapStats() {
+    await syncMapStats(true);
+    updateUI();
 }
 
 // ---------------------------------------------------------------------------
@@ -325,4 +365,7 @@ Object.assign(window, {
     closeAntiRatingPicker,
     saveNewAnti,
     toggleExpand,
+    setMap,
+    setMapWeight,
+    refreshMapStats,
 });
