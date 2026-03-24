@@ -62,7 +62,7 @@ window.onload = async () => {
     updateTeamSizeUI();
     updateRoleQueueUI();
     applyRoleOrderUI();
-    changeTab('tank');
+    changeTab(appState.activeRole || 'tank');
     updateUI();
 };
 
@@ -78,12 +78,7 @@ function updateUI() {
     renderTeamSlots(removeHero);
     renderMapControls(refreshMapStats);
 
-    // 現在アクティブなタブを検出して再描画
-    const activeTabBtn = document.querySelector('.tab-btn[class*="active"]');
-    if (activeTabBtn) {
-        const currentTab = activeTabBtn.id.replace('tab-', '');
-        renderHeroGrid(currentTab, toggleHero);
-    }
+    renderHeroGrid(appState.activeRole, toggleHero, canSelectHero);
 
     updateAntiResults();
 }
@@ -172,11 +167,13 @@ async function refreshMapStats() {
 // ---------------------------------------------------------------------------
 
 function changeTab(role) {
+    appState.activeRole = role;
     document.querySelectorAll('.tab-btn').forEach(b => {
         b.classList.remove('active-tank', 'active-damage', 'active-support');
     });
     document.getElementById(`tab-${role}`)?.classList.add(`active-${role}`);
-    renderHeroGrid(role, toggleHero);
+    renderHeroGrid(role, toggleHero, canSelectHero);
+    saveSettings();
 }
 
 function moveRole(role, direction) {
@@ -194,16 +191,24 @@ function moveRole(role, direction) {
 // ヒーロー選択
 // ---------------------------------------------------------------------------
 
+
+function canSelectHero(hero) {
+    const isAlreadySelected = appState.selectedHeroes.some(h => h.id === hero.id);
+    if (isAlreadySelected) return true;
+    if (appState.selectedHeroes.length >= appState.teamSize) return false;
+    if (!appState.isRoleQueue) return true;
+
+    const limit = appState.teamSize === 6 ? 2 : (hero.role === 'tank' ? 1 : 2);
+    const currentCount = appState.selectedHeroes.filter(h => h.role === hero.role).length;
+    return currentCount < limit;
+}
+
 function toggleHero(hero) {
     const idx = appState.selectedHeroes.findIndex(h => h.id === hero.id);
     if (idx >= 0) {
         appState.selectedHeroes.splice(idx, 1);
     } else {
-        if (appState.selectedHeroes.length >= appState.teamSize) return;
-        if (appState.isRoleQueue) {
-            const limit = appState.teamSize === 6 ? 2 : (hero.role === 'tank' ? 1 : 2);
-            if (appState.selectedHeroes.filter(h => h.role === hero.role).length >= limit) return;
-        }
+        if (!canSelectHero(hero)) return;
         appState.selectedHeroes.push(hero);
     }
     updateUI();

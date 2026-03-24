@@ -32,6 +32,9 @@ export const appState = {
     /** @type {string[]} 推奨アンチピック欄のロール表示順 */
     roleOrder: ['tank', 'damage', 'support'],
 
+    /** @type {'tank'|'damage'|'support'} ヒーローグリッドの現在タブ */
+    activeRole: 'tank',
+
     /** @type {string} 現在選択中のマップ（未選択時は空文字） */
     selectedMap: '',
 
@@ -82,11 +85,12 @@ export function loadHeroData() {
 
 /** 設定（teamSize / isRoleQueue / roleOrder）を localStorage に保存する */
 export function saveSettings() {
-    const { teamSize, isRoleQueue, roleOrder, selectedMap, mapWeight } = appState;
+    const { teamSize, isRoleQueue, roleOrder, activeRole, selectedMap, mapWeight } = appState;
     localStorage.setItem('ow-anti-settings', JSON.stringify({
         teamSize,
         isRoleQueue,
         roleOrder,
+        activeRole,
         selectedMap,
         mapWeight,
     }));
@@ -100,6 +104,7 @@ export function loadSettings() {
         appState.teamSize = s.teamSize ?? 5;
         appState.isRoleQueue = s.isRoleQueue ?? true;
         appState.roleOrder = s.roleOrder ?? ['tank', 'damage', 'support'];
+        appState.activeRole = s.activeRole ?? 'tank';
         appState.selectedMap = s.selectedMap ?? '';
         appState.mapWeight = s.mapWeight ?? 0.35;
     }
