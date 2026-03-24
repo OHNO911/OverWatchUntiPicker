@@ -10,6 +10,7 @@
  */
 
 import { appState } from '../core/state.js';
+import { MAP_OPTIONS } from '../core/map-stats.js';
 
 // ---------------------------------------------------------------------------
 // ヒーロー選択グリッド
@@ -151,6 +152,50 @@ export function renderAntiResults(scoredHeroes) {
         topContainer.innerHTML = topDisplay.map(h => _renderHeroRow(h, role, color)).join('');
         moreContainer.innerHTML = roleHeroes.slice(topDisplay.length).map(h => _renderHeroRow(h, role, color)).join('');
     });
+}
+
+// ---------------------------------------------------------------------------
+// マップ統計UI
+// ---------------------------------------------------------------------------
+
+/**
+ * マップ選択・ウェイト表示を状態に同期する
+ *
+ * @param {() => void} onRefreshMapStats
+ */
+export function renderMapControls(onRefreshMapStats) {
+    const select = document.getElementById('map-select');
+    const slider = document.getElementById('map-weight');
+    const sliderLabel = document.getElementById('map-weight-label');
+    const cacheLabel = document.getElementById('map-cache-status');
+    const refreshBtn = document.getElementById('map-refresh-btn');
+    if (!select || !slider || !sliderLabel || !cacheLabel || !refreshBtn) return;
+
+    if (select.options.length === 0) {
+        MAP_OPTIONS.forEach(o => {
+            const option = document.createElement('option');
+            option.value = o.value;
+            option.textContent = o.label;
+            select.appendChild(option);
+        });
+    }
+    select.value = appState.selectedMap;
+    slider.value = Math.round((appState.mapWeight || 0) * 100);
+    sliderLabel.textContent = `${slider.value}%`;
+
+    if (!appState.selectedMap) {
+        cacheLabel.textContent = 'マップ補正: 未選択';
+    } else if (!appState.mapWinRates) {
+        cacheLabel.textContent = 'マップ補正: 取得待ち';
+    } else {
+        const date = new Date(appState.mapWinRates.updatedAt);
+        const hh = String(date.getHours()).padStart(2, '0');
+        const mm = String(date.getMinutes()).padStart(2, '0');
+        const src = appState.mapWinRates.source === 'cache' ? 'cache' : 'network';
+        cacheLabel.textContent = `マップ補正: ${src} ${hh}:${mm}`;
+    }
+
+    refreshBtn.onclick = onRefreshMapStats;
 }
 
 /**

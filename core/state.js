@@ -32,6 +32,15 @@ export const appState = {
     /** @type {string[]} 推奨アンチピック欄のロール表示順 */
     roleOrder: ['tank', 'damage', 'support'],
 
+    /** @type {string} 現在選択中のマップ（未選択時は空文字） */
+    selectedMap: '',
+
+    /** @type {number} マップ統計ウェイト(0.0〜1.0) */
+    mapWeight: 0.35,
+
+    /** @type {{byRank:Object, blended:Object, updatedAt:number, source?:string}|null} マップ統計 */
+    mapWinRates: null,
+
     /** @type {Object.<string, string>} OverFast API から取得したヒーロー画像URLマップ */
     apiImages: {},
 
@@ -73,8 +82,14 @@ export function loadHeroData() {
 
 /** 設定（teamSize / isRoleQueue / roleOrder）を localStorage に保存する */
 export function saveSettings() {
-    const { teamSize, isRoleQueue, roleOrder } = appState;
-    localStorage.setItem('ow-anti-settings', JSON.stringify({ teamSize, isRoleQueue, roleOrder }));
+    const { teamSize, isRoleQueue, roleOrder, selectedMap, mapWeight } = appState;
+    localStorage.setItem('ow-anti-settings', JSON.stringify({
+        teamSize,
+        isRoleQueue,
+        roleOrder,
+        selectedMap,
+        mapWeight,
+    }));
 }
 
 /** localStorage から設定を復元する */
@@ -85,6 +100,8 @@ export function loadSettings() {
         appState.teamSize = s.teamSize ?? 5;
         appState.isRoleQueue = s.isRoleQueue ?? true;
         appState.roleOrder = s.roleOrder ?? ['tank', 'damage', 'support'];
+        appState.selectedMap = s.selectedMap ?? '';
+        appState.mapWeight = s.mapWeight ?? 0.35;
     }
 }
 
