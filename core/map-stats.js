@@ -12,7 +12,7 @@ const STATS_PAGE_BASE = 'https://overwatch.blizzard.com/ja-jp/rates/';
 const INPUT = 'PC';
 const REGION = 'Asia';
 const ROLE = 'All';
-const RQ = '0';
+const RQ = '1';
 const TIER = 'All';
 
 /** UIで使うマップ一覧（value は内部共通名） */

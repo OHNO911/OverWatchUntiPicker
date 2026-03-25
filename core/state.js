@@ -12,6 +12,12 @@
 
 import { DEFAULT_HERO_DATA } from '../data/heroes.js';
 
+/** このツールで固定するマッチ設定（5v5 ロールキュー） */
+const FIXED_MATCH_SETTINGS = {
+    teamSize: 5,
+    isRoleQueue: true,
+};
+
 /**
  * アプリ全体の状態。main.js と ui/render.js から参照する。
  * DOMから逆算するのではなく、ここを唯一の信頼できる状態源とする。
@@ -85,10 +91,10 @@ export function loadHeroData() {
 
 /** 設定（teamSize / isRoleQueue / roleOrder）を localStorage に保存する */
 export function saveSettings() {
-    const { teamSize, isRoleQueue, roleOrder, activeRole, selectedMap, mapWeight } = appState;
+    const { roleOrder, activeRole, selectedMap, mapWeight } = appState;
     localStorage.setItem('ow-anti-settings', JSON.stringify({
-        teamSize,
-        isRoleQueue,
+        teamSize: FIXED_MATCH_SETTINGS.teamSize,
+        isRoleQueue: FIXED_MATCH_SETTINGS.isRoleQueue,
         roleOrder,
         activeRole,
         selectedMap,
@@ -101,13 +107,16 @@ export function loadSettings() {
     const saved = localStorage.getItem('ow-anti-settings');
     if (saved) {
         const s = JSON.parse(saved);
-        appState.teamSize = s.teamSize ?? 5;
-        appState.isRoleQueue = s.isRoleQueue ?? true;
+        appState.teamSize = FIXED_MATCH_SETTINGS.teamSize;
+        appState.isRoleQueue = FIXED_MATCH_SETTINGS.isRoleQueue;
         appState.roleOrder = s.roleOrder ?? ['tank', 'damage', 'support'];
         appState.activeRole = s.activeRole ?? 'tank';
         appState.selectedMap = s.selectedMap ?? '';
         appState.mapWeight = s.mapWeight ?? 0.35;
+        return;
     }
+    appState.teamSize = FIXED_MATCH_SETTINGS.teamSize;
+    appState.isRoleQueue = FIXED_MATCH_SETTINGS.isRoleQueue;
 }
 
 // ---------------------------------------------------------------------------
