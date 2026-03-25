@@ -21,7 +21,7 @@ import {
     resetToDefault,
 } from './core/state.js';
 
-import { calculateAntiScores } from './core/calc.js';
+import { calculateAntiScores, calculateTeamCompositions } from './core/calc.js';
 import { getMapWinRates } from './core/map-stats.js';
 
 import {
@@ -30,6 +30,7 @@ import {
     renderAntiResults,
     renderDbTable,
     renderAntiPickerGrid,
+    renderTeamCompositions,
     updateRoleQueueUI,
     applyRoleOrderUI,
     updateHistoryButtons,
@@ -90,6 +91,11 @@ function updateAntiResults() {
         mapWeight: appState.mapWeight,
     });
     renderAntiResults(scoredHeroes);
+    const compositions = calculateTeamCompositions(appState.selectedHeroes, appState.heroData, {
+        mapWinRates: appState.mapWinRates?.blended,
+        mapWeight: appState.mapWeight,
+    });
+    renderTeamCompositions(compositions);
 }
 
 /**

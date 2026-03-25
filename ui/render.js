@@ -160,6 +160,61 @@ export function renderAntiResults(scoredHeroes) {
     });
 }
 
+/**
+ * おすすめ構成（5人セット）を描画する。
+ *
+ * @param {Array<{
+ *  rank:number,
+ *  name:string,
+ *  team:Array<{id:string,name:string,role:string}>,
+ *  breakdown:{counter:number,synergy:number,mapFit:number,difficultyPenalty:number,total:number},
+ *  reasons:string[]
+ * }>} compositions
+ */
+export function renderTeamCompositions(compositions) {
+    const container = document.getElementById('team-composition-results');
+    const empty = document.getElementById('team-composition-empty');
+    if (!container || !empty) return;
+
+    if (!compositions || compositions.length === 0) {
+        container.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+    }
+    empty.classList.add('hidden');
+
+    container.innerHTML = compositions.map(comp => {
+        const team = comp.team.map(h => `
+            <div class="flex items-center gap-2 bg-slate-900/60 border border-slate-700 rounded px-2 py-1">
+                <img src="${_heroImg(h)}" alt="${h.name}" class="w-6 h-6 object-contain">
+                <span class="text-[10px] font-bold text-slate-200">${h.name}</span>
+            </div>
+        `).join('');
+
+        return `
+            <div class="team-card bg-slate-900/80 border border-slate-700 rounded-xl p-3 space-y-2">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-black px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">#${comp.rank}</span>
+                        <h5 class="text-sm font-black text-slate-100">${comp.name}</h5>
+                    </div>
+                    <span class="text-xs font-black text-cyan-300">総合 ${comp.breakdown.total}</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${team}</div>
+                <div class="grid grid-cols-2 gap-1 text-[10px]">
+                    <span class="text-slate-300">Counter: <b>${comp.breakdown.counter}</b></span>
+                    <span class="text-slate-300">Synergy: <b>${comp.breakdown.synergy}</b></span>
+                    <span class="text-slate-300">MapFit: <b>${comp.breakdown.mapFit}</b></span>
+                    <span class="text-slate-300">Diff: <b>-${comp.breakdown.difficultyPenalty}</b></span>
+                </div>
+                <ul class="text-[10px] text-slate-400 list-disc pl-4 space-y-0.5">
+                    ${comp.reasons.map(r => `<li>${r}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }).join('');
+}
+
 // ---------------------------------------------------------------------------
 // マップ統計UI
 // ---------------------------------------------------------------------------
@@ -217,7 +272,6 @@ function _renderHeroRow(h, role, color) {
     return `
         <div class="rank-card role-${role} ${h.rank <= 3 ? 'rank-' + h.rank : ''} p-2 rounded flex items-center gap-3"
              onclick="this.classList.toggle('is-expanded')" style="color: ${color}">
-            <div class="rank-number">${h.rank}</div>
             <div class="w-10 h-10 rounded bg-slate-900 overflow-hidden flex-shrink-0 p-0.5">
                 <img src="${_heroImg(h)}" class="w-full h-full object-contain">
             </div>
