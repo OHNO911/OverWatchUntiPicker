@@ -111,6 +111,7 @@ function finalizeDataChange(shouldSaveHistory = true) {
 // ---------------------------------------------------------------------------
 
 function setTeamSize(size) {
+    if (size !== 5) return;
     appState.teamSize = size;
     updateTeamSizeUI();
     if (appState.selectedHeroes.length > size) {
@@ -122,8 +123,8 @@ function setTeamSize(size) {
 }
 
 function toggleRoleQueue() {
-    appState.isRoleQueue = !appState.isRoleQueue;
-    if (appState.isRoleQueue) applyRoleQueueLimits();
+    appState.isRoleQueue = true;
+    applyRoleQueueLimits();
     updateRoleQueueUI();
     updateUI();
     saveSettings();

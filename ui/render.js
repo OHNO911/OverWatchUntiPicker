@@ -343,14 +343,21 @@ export function renderAntiPickerGrid() {
 export function updateRoleQueueUI() {
     const button = document.getElementById('role-queue-btn');
     const toggle = document.getElementById('role-queue-toggle');
+    const label = document.getElementById('role-queue-label');
     if (button) {
-        button.classList.toggle('bg-emerald-500', appState.isRoleQueue);
-        button.classList.toggle('bg-slate-700', !appState.isRoleQueue);
+        button.classList.add('bg-emerald-500');
+        button.classList.remove('bg-slate-700');
         button.setAttribute('aria-checked', String(appState.isRoleQueue));
         button.setAttribute('role', 'switch');
+        button.setAttribute('aria-disabled', 'true');
+        button.disabled = true;
+        button.classList.add('opacity-60', 'cursor-not-allowed');
     }
     if (toggle) {
-        toggle.style.transform = appState.isRoleQueue ? 'translateX(1.5rem)' : 'translateX(0.25rem)';
+        toggle.style.transform = 'translateX(1.5rem)';
+    }
+    if (label) {
+        label.textContent = 'ロールキュー（固定）';
     }
 }
 
@@ -372,11 +379,18 @@ export function updateHistoryButtons() {
 
 /** チームサイズボタンのハイライトとグリッドレイアウトを更新する */
 export function updateTeamSizeUI() {
-    document.getElementById('size-5-btn')?.classList.toggle('bg-blue-600', appState.teamSize === 5);
-    document.getElementById('size-6-btn')?.classList.toggle('bg-blue-600', appState.teamSize === 6);
+    const size5Btn = document.getElementById('size-5-btn');
+    const size6Btn = document.getElementById('size-6-btn');
+    size5Btn?.classList.add('bg-blue-600');
+    size5Btn?.classList.remove('opacity-60');
+    if (size6Btn) {
+        size6Btn.classList.remove('bg-blue-600');
+        size6Btn.classList.add('opacity-60', 'cursor-not-allowed');
+        size6Btn.disabled = true;
+    }
     const container = document.getElementById('team-slots');
     if (container) {
-        container.className = `grid gap-2 md:gap-4 mb-8 max-w-3xl mx-auto transition-all ${appState.teamSize === 6 ? 'grid-cols-6-fixed' : 'grid-cols-5'}`;
+        container.className = 'grid gap-2 md:gap-4 mb-8 max-w-3xl mx-auto transition-all grid-cols-5';
     }
 }
 
