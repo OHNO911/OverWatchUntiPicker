@@ -10,7 +10,7 @@
 
 import {
     appState,
-    loadHeroData,
+    initializeHeroData,
     loadSettings,
     saveHeroData,
     saveSettings,
@@ -57,7 +57,7 @@ async function fetchImages() {
 
 window.onload = async () => {
     loadSettings();
-    loadHeroData();
+    await initializeHeroData();
     appState.apiImages = await fetchImages();
     await syncMapStats();
     updateTeamSizeUI();
