@@ -10,7 +10,7 @@
  * DOM アクセス・描画処理は含まない。
  */
 
-import { DEFAULT_HERO_DATA } from '../data/heroes.js';
+import { getDefaultHeroData } from '../data/heroes.js';
 
 /** このツールで固定するマッチ設定（5v5 ロールキュー） */
 const FIXED_MATCH_SETTINGS = {
@@ -24,7 +24,7 @@ const FIXED_MATCH_SETTINGS = {
  */
 export const appState = {
     /** @type {import('../data/heroes.js').HeroData[]} 現在のヒーローデータ（編集可能） */
-    heroData: [...DEFAULT_HERO_DATA],
+    heroData: [],
 
     /** @type {import('../data/heroes.js').HeroData[]} 現在選択されている敵ヒーロー */
     selectedHeroes: [],
@@ -74,6 +74,15 @@ export const appState = {
     redoStack: [],
 };
 
+
+let defaultHeroData = [];
+
+/** JSON 既定データを読み込み、保存済みデータがあれば上書きする */
+export async function initializeHeroData() {
+    defaultHeroData = await getDefaultHeroData();
+    appState.heroData = JSON.parse(JSON.stringify(defaultHeroData));
+    loadHeroData();
+}
 // ---------------------------------------------------------------------------
 // 永続化
 // ---------------------------------------------------------------------------
@@ -151,10 +160,10 @@ export function redoHeroData() {
     return true;
 }
 
-/** heroData を DEFAULT_HERO_DATA に戻す（undo スタックに現状を積んでから実行） */
+/** heroData を JSON 既定値に戻す（undo スタックに現状を積んでから実行） */
 export function resetToDefault() {
     saveToHistory();
-    appState.heroData = JSON.parse(JSON.stringify(DEFAULT_HERO_DATA));
+    appState.heroData = JSON.parse(JSON.stringify(defaultHeroData));
 }
 
 // ---------------------------------------------------------------------------
